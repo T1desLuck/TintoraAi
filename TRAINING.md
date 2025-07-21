@@ -1,83 +1,76 @@
-# Обучение TintoraAI
+# Training TintoraAI
 
-Этот документ описывает, как собрать датасет и обучить TintoraAI с нуля для фотореалистичной раскраски на ПК или в Google Colab.
+TintoraAI, созданный [T1desLuck](https://github.com/T1desLuck), можно обучить с нуля на собственном датасете. Следуйте этим шагам.
 
 ## Подготовка датасета
-1. **Структура датасета**:
-   - Создайте папку `dataset/`:
-     ```
-     dataset/
-       ├── bw/        # Черно-белые изображения
-       ├── color/     # Цветные версии тех же изображений
-     ```
-   - Имена файлов должны совпадать (например, `image1.jpg`).
 
-2. **Сбор данных**:
-   - Используйте открытые архивы (Flickr Commons, Unsplash) или свои фото.
-   - Конвертируйте цветные фото в ч/б:
-     ```python
-     from PIL import Image
-     import os
+1. Создайте директорию с двумя поддиректориями:
+   - `bw/`: Чёрно-белые изображения.
+   - `color/`: Соответствующие цветные изображения (пары с `bw/`).
 
-     color_dir = "dataset/color"
-     bw_dir = "dataset/bw"
-     os.makedirs(bw_dir, exist_ok=True)
-     for img_name in os.listdir(color_dir):
-         img = Image.open(os.path.join(color_dir, img_name)).convert("L")
-         img.save(os.path.join(bw_dir, img_name))
-     ```
-   - Рекомендуемый размер: 1000+ пар изображений.
+2. Убедитесь, что изображения имеют одинаковые размеры и формат (например, JPG).
 
-3. **Формат**:
-   - Формат: JPG, JPEG, PNG.
-   - Размеры: Любые (масштабируются до 256x256).
+Пример структуры:
+```
+dataset/
+  bw/
+    image1.jpg
+    image2.jpg
+  color/
+    image1.jpg
+    image2.jpg
+```
 
-## Обучение на ПК
-1. Запустите обучение:
+## Установка
+
+### Локально
+1. Клонируйте репозиторий:
    ```bash
-   python src/training/train.py --data_path /path/to/dataset --epochs 10 --batch_size 8
-   ```
-   - `--data_path`: Путь к `dataset/`.
-   - `--epochs`: Количество эпох (10–50).
-   - `--batch_size`: 8 для GPU, 4 для CPU.
-
-2. Требования:
-   - GPU (NVIDIA с CUDA) или CPU.
-   - ОЗУ: 16 ГБ+ для больших датасетов.
-
-3. Результат:
-   - Веса сохраняются в `colorizer_weights.pth`.
-   - Добавьте их в `src/colorize.py`:
-     ```python
-     model.load_state_dict(torch.load("colorizer_weights.pth"))
-     ```
-
-## Обучение в Google Colab
-1. Загрузите репозиторий:
-   ```bash
-   !git clone https://github.com/your-username/TintoraAI.git
-   %cd TintoraAI
+   git clone https://github.com/T1desLuck/TintoraAi.git
+   cd TintoraAi
    ```
 2. Установите зависимости:
    ```bash
+   pip install -r requirements.txt
+   ```
+
+### В Google Colab
+1. Откройте Colab: [Google Colab](https://colab.research.google.com/).
+2. Выполните команды:
+   ```python
+   !git clone https://github.com/T1desLuck/TintoraAi.git
+   %cd TintoraAi
    !pip install -r requirements.txt
    ```
-3. Загрузите датасет (например, через Google Drive):
-   ```bash
+3. Загрузите датасет (например, через Google Drive и смонтируйте его):
+   ```python
    from google.colab import drive
    drive.mount('/content/drive')
+   !cp -r /content/drive/MyDrive/dataset /content/TintoraAi/
    ```
-4. Запустите обучение:
-   ```bash
-   !python src/training/train.py --data_path /content/drive/MyDrive/dataset --epochs 10
-   ```
+
+## Обучение
+
+### Локально
+Запустите скрипт `train.py`:
+```bash
+python src/training/train.py --data_path /path/to/dataset
+```
+- `--data_path`: Путь к директории датасета.
+- `--epochs`: Количество эпох (по умолчанию 10).
+- `--batch_size`: Размер батча (по умолчанию 8).
+
+### В Google Colab
+```python
+!python src/training/train.py --data_path /content/TintoraAi/dataset
+```
+
+### Выходные данные
+- Веса модели сохраняются как `colorizer_weights.pth` в корневой директории.
+
+## Мониторинг
+Скрипт выводит текущую потерю (loss) для каждой эпохи. Для детального анализа добавьте логирование.
 
 ## Советы
-- **Качество**: Используйте разнообразный датасет (портреты, пейзажи).
-- **Скорость**: Для CPU уменьшите `batch_size` до 4.
-- **Мониторинг**: Loss должен уменьшаться.
-
-## Устранение неполадок
-- **Out of Memory**: Уменьшите `batch_size` или размер изображений.
-- **Плохое качество**: Увеличьте эпохи или данные.
-- **Ошибки датасета**: Проверьте совпадение имен файлов.
+- Используйте GPU (в Colab он доступен бесплатно).
+- Увеличьте `--epochs` для лучшего качества при большом датасете.
