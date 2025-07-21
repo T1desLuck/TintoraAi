@@ -23,4 +23,6 @@ jobs:
       - name: Run linter
         run: flake8 src/ tests/
       - name: Run tests
-        run: pytest tests/
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+          pytest tests/
