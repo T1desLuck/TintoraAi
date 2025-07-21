@@ -1,8 +1,5 @@
-streamlit
 torch
 torchvision
-fastapi
-uvicorn
 pillow
 pytest
 flake8
