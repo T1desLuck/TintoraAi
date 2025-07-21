@@ -7,28 +7,28 @@ from src.model.postprocess import postprocess_image
 
 
 def main():
-    parser = argparse.ArgumentParser(description="TintoraAI: Раскраска фотографий")
+    parser = argparse.ArgumentParser(description="TintoraAI: Colorization of photos")
     parser.add_argument(
         "--input",
         type=str,
         required=True,
-        help="Путь к входному фото")
+        help="Path to input image")
     parser.add_argument(
         "--output",
         type=str,
         default="colored_image.jpg",
-        help="Путь для сохранения результата")
+        help="Path to save output image")
     parser.add_argument(
         "--saturation",
         type=float,
         default=1.0,
-        help="Насыщенность (0.5–2.0)")
+        help="Color saturation (0.5-2.0)")
     parser.add_argument(
         "--style",
         type=str,
         default="neutral",
         choices=["modern", "vintage", "neutral"],
-        help="Стиль раскраски")
+        help="Colorization style")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -40,8 +40,8 @@ def main():
             "colorizer_weights.pth",
             map_location=device))
     except FileNotFoundError:
-        print("Веса модели не найдены. Результат будет случайным. "
-              "Обучите модель (см. TRAINING.md).")
+        print("Model weights not found. Output will be random. "
+              "Train the model (see TRAINING.md).")
     model.eval()
 
     # Загрузка и обработка изображения
@@ -62,7 +62,7 @@ def main():
     colored_image = postprocess_image(output_tensor, original_size,
                                       args.saturation)
     colored_image.save(args.output)
-    print(f"Раскрашенное фото сохранено в {args.output}")
+    print(f"Colored image saved to {args.output}")
 
 
 if __name__ == "__main__":
