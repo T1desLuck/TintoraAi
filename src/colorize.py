@@ -26,8 +26,9 @@ def main():
     # Загрузка модели
     model = TintoraAI().to(device)
     try:
-        model.load_state_dict(torch.load("colorizer_weights.pth",
-                                         map_location=device))
+        model.load_state_dict(torch.load(
+            "colorizer_weights.pth",
+            map_location=device))
     except FileNotFoundError:
         print("Веса модели не найдены. Результат будет случайным. "
               "Обучите модель (см. TRAINING.md).")
