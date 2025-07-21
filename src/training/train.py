@@ -1,14 +1,16 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torchvision import models
+from torchvision import models, transforms
 import torch.nn.functional as F
 from src.model.tintora_ai import TintoraAI
 from src.training.dataset import ColorizationDataset
 import argparse
+import os
 
 
-def train_model(data_path, epochs=10, batch_size=8, save_path="colorizer_weights.pth"):
+def train_model(data_path, epochs=10, batch_size=8,
+                save_path="colorizer_weights.pth"):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
@@ -60,11 +62,14 @@ def train_model(data_path, epochs=10, batch_size=8, save_path="colorizer_weights
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train TintoraAI model")
-    parser.add_argument("--data_path", type=str, required=True,
-                        help="Path to dataset")
-    parser.add_argument("--epochs", type=int, default=10,
-                        help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=8,
-                        help="Batch size")
+    parser.add_argument(
+        "--data_path", type=str, required=True,
+        help="Path to dataset")
+    parser.add_argument(
+        "--epochs", type=int, default=10,
+        help="Number of epochs")
+    parser.add_argument(
+        "--batch_size", type=int, default=8,
+        help="Batch size")
     args = parser.parse_args()
     train_model(args.data_path, args.epochs, args.batch_size)
