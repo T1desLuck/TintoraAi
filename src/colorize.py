@@ -8,17 +8,27 @@ from src.model.postprocess import postprocess_image
 
 def main():
     parser = argparse.ArgumentParser(description="TintoraAI: Раскраска фотографий")
-    parser.add_argument("--input", type=str, required=True,
-                        help="Путь к входному фото")
     parser.add_argument(
-        "--output", type=str, default="colored_image.jpg",
+        "--input",
+        type=str,
+        required=True,
+        help="Путь к входному фото")
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="colored_image.jpg",
         help="Путь для сохранения результата")
     parser.add_argument(
-        "--saturation", type=float, default=1.0,
+        "--saturation",
+        type=float,
+        default=1.0,
         help="Насыщенность (0.5–2.0)")
     parser.add_argument(
-        "--style", type=str, default="neutral",
-        choices=["modern", "vintage", "neutral"], help="Стиль раскраски")
+        "--style",
+        type=str,
+        default="neutral",
+        choices=["modern", "vintage", "neutral"],
+        help="Стиль раскраски")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
