@@ -8,8 +8,8 @@ from src.model.postprocess import postprocess_image
 
 def main():
     parser = argparse.ArgumentParser(description="TintoraAI: Раскраска фотографий")
-    parser.add_argument(
-        "--input", type=str, required=True, help="Путь к входному фото")
+    parser.add_argument("--input", type=str, required=True,
+                        help="Путь к входному фото")
     parser.add_argument(
         "--output", type=str, default="colored_image.jpg",
         help="Путь для сохранения результата")
