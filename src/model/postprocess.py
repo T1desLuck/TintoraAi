@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-import torch
+
 
 def postprocess_image(output_tensor, original_size, saturation=1.0):
     """Конвертирует тензор в изображение, обрезает padding, применяет насыщенность."""
