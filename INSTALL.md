@@ -14,8 +14,8 @@
 ## Установка локально
 1. **Клонируйте репозиторий**:
    ```bash
-   git clone https://github.com/your-username/TintoraAI.git
-   cd TintoraAI
+   git clone https://github.com/T1desLuck/TintoraAi
+   %cd /content/TintoraAi
    ```
 
 2. **Создайте виртуальное окружение** (рекомендуется):
