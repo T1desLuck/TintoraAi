@@ -1,7 +1,8 @@
 from torch.utils.data import Dataset
 from PIL import Image
 import glob
-from torchvision import transforms
+import os
+
 
 class ColorizationDataset(Dataset):
     def __init__(self, bw_path, color_path, transform=None):
