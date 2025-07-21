@@ -7,8 +7,9 @@ from src.model.postprocess import postprocess_image
 
 
 def main():
-    parser = argparse.ArgumentParser(description="TintoraAI: Colorization of photos"
-                                    )
+    parser = argparse.ArgumentParser(
+        description="TintoraAI: Colorization of photos"
+    )
     parser.add_argument(
         "--input",
         type=str,
