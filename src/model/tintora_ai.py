@@ -19,6 +19,27 @@ class DoubleConv(nn.Module):
         return self.conv(x)
 
 
+class AttentionBlock(nn.Module):
+    def __init__(self, channels):
+        super(AttentionBlock, self).__init__()
+        self.query_conv = nn.Conv2d(channels, channels // 8, 1)
+        self.key_conv = nn.Conv2d(channels, channels // 8, 1)
+        self.value_conv = nn.Conv2d(channels, channels, 1)
+        self.gamma = nn.Parameter(torch.zeros(1))
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        batch, c, h, w = x.size()
+        query = self.query_conv(x).view(batch, -1, h * w)
+        key = self.key_conv(x).view(batch, -1, h * w)
+        value = self.value_conv(x).view(batch, c, h * w)
+        energy = torch.bmm(query.transpose(1, 2), key)
+        attention = self.softmax(energy)
+        out = torch.bmm(value, attention)
+        out = out.view(batch, c, h, w)
+        return x + self.gamma * out
+
+
 class UNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=3):
         super(UNet, self).__init__()
@@ -33,6 +54,7 @@ class UNet(nn.Module):
 
         # Bottleneck
         self.bottleneck = DoubleConv(256, 512)
+        self.attention = AttentionBlock(512)
 
         # Decoder
         self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
@@ -56,6 +78,7 @@ class UNet(nn.Module):
 
         # Bottleneck
         b = self.bottleneck(p3)
+        b = self.attention(b)
 
         # Decoder with skip connections
         d3 = self.upconv3(b)
@@ -80,7 +103,6 @@ class ObjectClassifier(nn.Module):
             self.resnet.fc.in_features, 10)  # 10 классов (лицо, одежда и т.д.)
 
     def forward(self, x):
-        # Преобразуем 1 канал в 3 для ResNet
         x = x.repeat(1, 3, 1, 1)  # Дублируем канал для тестов
         return self.resnet(x)
 
