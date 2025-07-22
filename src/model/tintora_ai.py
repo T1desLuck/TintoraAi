@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet18
 
 
 class DoubleConv(nn.Module):
@@ -51,18 +50,27 @@ class UNet(nn.Module):
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.enc3 = DoubleConv(128, 256)
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.enc4 = DoubleConv(256, 512)
+        self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         # Bottleneck
-        self.bottleneck = DoubleConv(256, 512)
-        self.attention = AttentionBlock(512)
+        self.bottleneck = DoubleConv(512, 1024)
+        self.attention1 = AttentionBlock(1024)
+        self.attention2 = AttentionBlock(1024)
 
         # Decoder
+        self.upconv4 = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
+        self.dec4 = DoubleConv(1024, 512)
+        self.attention3 = AttentionBlock(512)
         self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
         self.dec3 = DoubleConv(512, 256)
+        self.attention4 = AttentionBlock(256)
         self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
         self.dec2 = DoubleConv(256, 128)
+        self.attention5 = AttentionBlock(128)
         self.upconv1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
         self.dec1 = DoubleConv(128, 64)
+        self.attention6 = AttentionBlock(64)
 
         # Final layer
         self.out = nn.Conv2d(64, out_channels, kernel_size=1)
@@ -75,21 +83,31 @@ class UNet(nn.Module):
         p2 = self.pool2(e2)
         e3 = self.enc3(p2)
         p3 = self.pool3(e3)
+        e4 = self.enc4(p3)
+        p4 = self.pool4(e4)
 
         # Bottleneck
-        b = self.bottleneck(p3)
-        b = self.attention(b)
+        b = self.bottleneck(p4)
+        b = self.attention1(b)
+        b = self.attention2(b)
 
-        # Decoder with skip connections
-        d3 = self.upconv3(b)
+        # Decoder
+        d4 = self.upconv4(b)
+        d4 = torch.cat([d4, e4], dim=1)
+        d4 = self.dec4(d4)
+        d4 = self.attention3(d4)
+        d3 = self.upconv3(d4)
         d3 = torch.cat([d3, e3], dim=1)
         d3 = self.dec3(d3)
+        d3 = self.attention4(d3)
         d2 = self.upconv2(d3)
         d2 = torch.cat([d2, e2], dim=1)
         d2 = self.dec2(d2)
+        d2 = self.attention5(d2)
         d1 = self.upconv1(d2)
         d1 = torch.cat([d1, e1], dim=1)
         d1 = self.dec1(d1)
+        d1 = self.attention6(d1)
 
         out = self.out(d1)
         return torch.sigmoid(out)
@@ -98,13 +116,23 @@ class UNet(nn.Module):
 class ObjectClassifier(nn.Module):
     def __init__(self):
         super(ObjectClassifier, self).__init__()
-        self.resnet = resnet18(weights=None)  # Без предобученных весов
-        self.resnet.fc = nn.Linear(
-            self.resnet.fc.in_features, 10)  # 10 классов (лицо, одежда и т.д.)
+        self.conv1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(256 * 32 * 32, 512)
+        self.fc2 = nn.Linear(512, 10)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
-        x = x.repeat(1, 3, 1, 1)  # Дублируем канал для тестов
-        return self.resnet(x)
+        x = self.pool(self.relu(self.conv1(x)))
+        x = self.pool(self.relu(self.conv2(x)))
+        x = self.pool(self.relu(self.conv3(x)))
+        x = x.view(x.size(0), -1)
+        x = self.dropout(self.relu(self.fc1(x)))
+        x = self.fc2(x)
+        return x
 
 
 class TintoraAI(nn.Module):
