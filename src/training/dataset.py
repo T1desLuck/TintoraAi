@@ -13,7 +13,8 @@ class ColorizationDataset(Dataset):
             p.replace("bw", "color") for p in self.bw_images
         ]
         self.label_images = [
-            p.replace("bw", label_path).replace(".jpg", ".npy")
+            p.replace("bw", label_path)
+            .replace(".jpg", ".npy")
             for p in self.bw_images
         ]
         self.transform = transform
