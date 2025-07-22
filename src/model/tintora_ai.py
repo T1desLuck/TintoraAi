@@ -120,7 +120,7 @@ class ObjectClassifier(nn.Module):
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(256 * 32 * 32, 512)
+        self.fc1 = nn.Linear(256 * 8 * 8, 512)  # Исправлено на 256 * 8 * 8 = 16384
         self.fc2 = nn.Linear(512, 10)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
