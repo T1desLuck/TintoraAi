@@ -8,7 +8,7 @@ import torch
 
 class ColorizationDataset(Dataset):
     def __init__(self, bw_path, color_path, label_path, transform=None):
-        self.bw_images = glob.glob(os.path.join(bw_path, "*.jpg"))
+        self.bw_images = sorted(glob.glob(os.path.join(bw_path, "*.jpg")))  # Сортировка для порядка
         self.color_images = [
             p.replace("bw", "color") for p in self.bw_images
         ]
