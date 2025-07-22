@@ -12,5 +12,8 @@ def preprocess_image(image, pad_divisor=8):
     padded_image = Image.new('L', (w + pad_w, h + pad_h), 0)  # Добавление padding
     padded_image.paste(image, (0, 0))
     img_array = np.array(padded_image) / 255.0
-    img_tensor = torch.from_numpy(img_array).float().unsqueeze(0).unsqueeze(0)
+    img_tensor = (torch.from_numpy(img_array)
+                  .float()
+                  .unsqueeze(0)
+                  .unsqueeze(0))
     return img_tensor, (w, h)
