@@ -55,7 +55,6 @@ def train_model(data_path, epochs=10, batch_size=8,
             )
             optimizer.zero_grad()
             color_output, semantic_output = model(bw_imgs)
-            
             # Color loss
             pixel_loss = criterion_color(color_output, color_imgs)
             perc_loss = perceptual_loss(color_output, color_imgs)
