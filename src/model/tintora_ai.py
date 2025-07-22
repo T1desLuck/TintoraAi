@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision.models import resnet18
 
 
 class DoubleConv(nn.Module):
@@ -71,10 +72,23 @@ class UNet(nn.Module):
         return torch.sigmoid(out)
 
 
+class ObjectClassifier(nn.Module):
+    def __init__(self):
+        super(ObjectClassifier, self).__init__()
+        self.resnet = resnet18(pretrained=True)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, 10)  # 10 классов (лицо, одежда и т.д.)
+
+    def forward(self, x):
+        return self.resnet(x)
+
+
 class TintoraAI(nn.Module):
     def __init__(self):
         super(TintoraAI, self).__init__()
         self.unet = UNet()
+        self.classifier = ObjectClassifier()
 
     def forward(self, x):
-        return self.unet(x)
+        color_output = self.unet(x)
+        semantic_output = self.classifier(x)
+        return color_output, semantic_output
