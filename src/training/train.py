@@ -82,7 +82,7 @@ def train_model(data_path, epochs=10, batch_size=8,
             fake_imgs, _ = generator(bw_imgs)
             fake_validity = discriminator(fake_imgs.detach())
             d_loss = (criterion_gan(real_validity, torch.ones_like(real_validity)) +
-                     criterion_gan(fake_validity, torch.zeros_like(fake_validity))) / 2
+                      criterion_gan(fake_validity, torch.zeros_like(fake_validity))) / 2
             d_loss.backward()
             optimizer_d.step()
 
@@ -96,7 +96,7 @@ def train_model(data_path, epochs=10, batch_size=8,
             g_semantic_loss = criterion_semantic(semantic_output, labels)
             g_gan_loss = criterion_gan(fake_validity, torch.ones_like(fake_validity))
             total_loss = (g_color_loss + 0.1 * g_semantic_loss +
-                         0.1 * g_gan_loss)
+                          0.1 * g_gan_loss)
             total_loss.backward()
             optimizer_g.step()
 
