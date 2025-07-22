@@ -52,16 +52,16 @@ def main():
     input_tensor = input_tensor.to(device)
 
     with torch.no_grad():
-        output_tensor = model(input_tensor)
+        color_output, _ = model(input_tensor)  # Распаковываем только цвет
 
     # Применение стиля
     if args.style == "modern":
-        output_tensor *= 1.1  # Увеличение яркости
+        color_output *= 1.1  # Увеличение яркости
     elif args.style == "vintage":
-        output_tensor *= 0.9  # Приглушенные тона
+        color_output *= 0.9  # Приглушённые тона
 
     # Постобработка
-    colored_image = postprocess_image(output_tensor, original_size,
+    colored_image = postprocess_image(color_output, original_size,
                                       args.saturation)
     colored_image.save(args.output)
     print(f"Colored image saved to {args.output}")
