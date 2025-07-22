@@ -3,13 +3,19 @@ from PIL import Image
 import glob
 import os
 import numpy as np
+import torch
 
 
 class ColorizationDataset(Dataset):
     def __init__(self, bw_path, color_path, label_path, transform=None):
         self.bw_images = glob.glob(os.path.join(bw_path, "*.jpg"))
-        self.color_images = [p.replace("bw", "color") for p in self.bw_images]
-        self.label_images = [p.replace("bw", label_path).replace(".jpg", ".npy") for p in self.bw_images]
+        self.color_images = [
+            p.replace("bw", "color") for p in self.bw_images
+        ]
+        self.label_images = [
+            p.replace("bw", label_path).replace(".jpg", ".npy")
+            for p in self.bw_images
+        ]
         self.transform = transform
 
     def __len__(self):
