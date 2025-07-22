@@ -29,3 +29,5 @@ TintoraAI — это нейросеть, которая:
 
 ## Спасибо!
 Спасибо, что интересуешься TintoraAI! Если есть вопросы, пиши в [Issues](https://github.com/T1desLuck/TintoraAi/issues).
+
+Массовая загрузка изображений с фотостоков [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/15_geSdpK33UzI1ndn2nzQvIhXRggHAFv?usp=sharing)
