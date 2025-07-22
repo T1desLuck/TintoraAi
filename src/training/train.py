@@ -9,6 +9,26 @@ import argparse
 import os
 
 
+class Discriminator(nn.Module):
+    def __init__(self):
+        super(Discriminator, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Conv2d(256, 1, kernel_size=4, stride=1, padding=0),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
+
 def train_model(data_path, epochs=10, batch_size=8,
                 save_path="colorizer_weights.pth"):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,16 +46,18 @@ def train_model(data_path, epochs=10, batch_size=8,
     )
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    model = TintoraAI().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    generator = TintoraAI().to(device)
+    discriminator = Discriminator().to(device)
+    optimizer_g = torch.optim.Adam(generator.parameters(), lr=1e-4)
+    optimizer_d = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
 
-    # Perceptual loss с VGG16
     vgg = models.vgg16(pretrained=True).features.to(device).eval()
     for param in vgg.parameters():
         param.requires_grad = False
 
     criterion_color = nn.MSELoss()
     criterion_semantic = nn.CrossEntropyLoss()
+    criterion_gan = nn.BCELoss()
 
     def perceptual_loss(output, target):
         vgg_layers = [2, 7, 12]
@@ -53,25 +75,34 @@ def train_model(data_path, epochs=10, batch_size=8,
                 color_imgs.to(device),
                 labels.to(device)
             )
-            optimizer.zero_grad()
-            color_output, semantic_output = model(bw_imgs)
-            # Color loss
-            pixel_loss = criterion_color(color_output, color_imgs)
-            perc_loss = perceptual_loss(color_output, color_imgs)
-            total_color_loss = 0.7 * pixel_loss + 0.3 * perc_loss
 
-            # Semantic loss
-            semantic_loss = criterion_semantic(semantic_output, labels)
+            # Train Discriminator
+            optimizer_d.zero_grad()
+            real_validity = discriminator(color_imgs)
+            fake_imgs, _ = generator(bw_imgs)
+            fake_validity = discriminator(fake_imgs.detach())
+            d_loss = (criterion_gan(real_validity, torch.ones_like(real_validity)) +
+                      criterion_gan(fake_validity, torch.zeros_like(fake_validity))) / 2
+            d_loss.backward()
+            optimizer_d.step()
 
-            # Total loss
-            total_loss = total_color_loss + 0.1 * semantic_loss
+            # Train Generator
+            optimizer_g.zero_grad()
+            fake_imgs, semantic_output = generator(bw_imgs)
+            fake_validity = discriminator(fake_imgs)
+            pixel_loss = criterion_color(fake_imgs, color_imgs)
+            perc_loss = perceptual_loss(fake_imgs, color_imgs)
+            g_color_loss = 0.7 * pixel_loss + 0.3 * perc_loss
+            g_semantic_loss = criterion_semantic(semantic_output, labels)
+            g_gan_loss = criterion_gan(fake_validity, torch.ones_like(fake_validity))
+            total_loss = g_color_loss + 0.1 * g_semantic_loss + 0.1 * g_gan_loss
             total_loss.backward()
-            optimizer.step()
+            optimizer_g.step()
 
         print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss.item()}")
 
-    torch.save(model.state_dict(), save_path)
-    return model
+    torch.save(generator.state_dict(), save_path)
+    return generator
 
 
 if __name__ == "__main__":
