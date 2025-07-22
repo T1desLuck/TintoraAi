@@ -75,11 +75,13 @@ class UNet(nn.Module):
 class ObjectClassifier(nn.Module):
     def __init__(self):
         super(ObjectClassifier, self).__init__()
-        self.resnet = resnet18(pretrained=True)
+        self.resnet = resnet18(weights=None)  # Без предобученных весов
         self.resnet.fc = nn.Linear(
             self.resnet.fc.in_features, 10)  # 10 классов (лицо, одежда и т.д.)
 
     def forward(self, x):
+        # Преобразуем 1 канал в 3 для ResNet
+        x = x.repeat(1, 3, 1, 1)  # Дублируем канал для тестов
         return self.resnet(x)
 
 
