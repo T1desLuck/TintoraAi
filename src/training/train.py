@@ -29,7 +29,9 @@ class Discriminator(nn.Module):
         return self.model(x)
 
 
-def train_model(data_path, epochs=10, batch_size=8, save_path="colorizer_weights.pth", num_classes=99):
+def train_model(
+    data_path, epochs=10, batch_size=8,
+    save_path="colorizer_weights.pth", num_classes=99):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
@@ -120,6 +122,8 @@ if __name__ == "__main__":
                         help="Number of epochs")
     parser.add_argument("--batch_size", type=int, default=8,
                         help="Batch size")
-    parser.add_argument("--num_classes", type=int, default=99, help="Number of classes for semantic output")
+    parser.add_argument("--num_classes", type=int, default=99,
+                        help="Number of classes for semantic output")
     args = parser.parse_args()
-    train_model(args.data_path, args.epochs, args.batch_size, num_classes=args.num_classes)
+    train_model(args.data_path, args.epochs, 
+                args.batch_size, num_classes=args.num_classes)
