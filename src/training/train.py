@@ -29,9 +29,8 @@ class Discriminator(nn.Module):
         return self.model(x)
 
 
-def train_model(
-    data_path, epochs=10, batch_size=8,
-    save_path="colorizer_weights.pth", num_classes=99):
+def train_model(data_path, epochs=10, batch_size=8,
+                save_path="colorizer_weights.pth", num_classes=99):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
@@ -82,10 +81,8 @@ def train_model(
             real_validity = discriminator(color_imgs)
             fake_imgs, _ = generator(bw_imgs)
             fake_validity = discriminator(fake_imgs.detach())
-            d_loss = (
-                criterion_gan(real_validity, torch.ones_like(real_validity)) +
-                criterion_gan(fake_validity, torch.zeros_like(fake_validity))
-            ) / 2
+            d_loss = (criterion_gan(real_validity, torch.ones_like(real_validity)) +
+                      criterion_gan(fake_validity, torch.zeros_like(fake_validity))) / 2
             d_loss.backward()
             optimizer_d.step()
 
@@ -98,11 +95,9 @@ def train_model(
             g_color_loss = 0.7 * pixel_loss + 0.3 * perc_loss
             g_semantic_loss = criterion_semantic(semantic_output, labels)
             g_gan_loss = criterion_gan(fake_validity, torch.ones_like(fake_validity))
-            total_loss = (
-                g_color_loss +
-                0.1 * g_semantic_loss +
-                0.1 * g_gan_loss
-            )
+            total_loss = (g_color_loss +
+                          0.1 * g_semantic_loss +
+                          0.1 * g_gan_loss)
             total_loss.backward()
             optimizer_g.step()
 
@@ -125,5 +120,5 @@ if __name__ == "__main__":
     parser.add_argument("--num_classes", type=int, default=99,
                         help="Number of classes for semantic output")
     args = parser.parse_args()
-    train_model(args.data_path, args.epochs, 
-                args.batch_size, num_classes=args.num_classes)
+    train_model(args.data_path, args.epochs, args.batch_size,
+                num_classes=args.num_classes)
