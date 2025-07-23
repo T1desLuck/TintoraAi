@@ -3,3 +3,6 @@ torchvision
 pillow
 pytest
 flake8
+# Дополнительные зависимости для метрик и тестирования
+pytorch-msssim
+lpips
