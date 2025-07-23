@@ -121,7 +121,7 @@ class ObjectClassifier(nn.Module):
         self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.fc1 = nn.Linear(256 * 8 * 8, 512)
-        self.fc2 = nn.Linear(512, num_classes)
+        self.fc2 = nn.Linear(512, 1000)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
 
@@ -139,7 +139,7 @@ class TintoraAI(nn.Module):
     def __init__(self, num_classes=99):
         super(TintoraAI, self).__init__()
         self.unet = UNet()
-        self.classifier = ObjectClassifier(num_classes)
+        self.classifier = ObjectClassifier(1000)
 
     def forward(self, x):
         color_output = self.unet(x)
