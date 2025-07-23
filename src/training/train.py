@@ -46,7 +46,7 @@ def train_model(data_path, epochs=10, batch_size=8,
     )
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    generator = TintoraAI(num_classes=num_classes).to(device)
+    generator = TintoraAI(num_classes=1000).to(device)
     discriminator = Discriminator().to(device)
     optimizer_g = torch.optim.Adam(generator.parameters(), lr=1e-4)
     optimizer_d = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
@@ -117,8 +117,8 @@ if __name__ == "__main__":
                         help="Number of epochs")
     parser.add_argument("--batch_size", type=int, default=8,
                         help="Batch size")
-    parser.add_argument("--num_classes", type=int, default=99,
+    parser.add_argument("--num_classes", type=int, default=1000,
                         help="Number of classes for semantic output")
     args = parser.parse_args()
     train_model(args.data_path, args.epochs, args.batch_size,
-                num_classes=args.num_classes)
+                num_classes=args.1000)
