@@ -36,7 +36,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Загрузка модели
-    model = TintoraAI(num_classes=99).to(device)
+    model = TintoraAI(num_classes=1000).to(device)
     try:
         model.load_state_dict(torch.load(
             "colorizer_weights.pth",
