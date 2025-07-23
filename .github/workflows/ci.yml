@@ -20,10 +20,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest flake8 pytorch-msssim lpips
+          echo "Installed dependencies: $(pip list | grep -E 'flake8|pytest|pytorch-msssim|lpips')"
       - name: Check memory
         run: free -h
       - name: Run linter
-        run: flake8 src/ tests/
+        run: |
+          echo "Running flake8 on src/ and tests/"
+          flake8 src/ tests/ || { echo "Flake8 failed"; exit 1; }
       - name: Run tests
         run: |
           cd $GITHUB_WORKSPACE
