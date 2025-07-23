@@ -8,7 +8,7 @@ def test_model_forward():
     color_output, semantic_output = model(input_tensor)
     assert color_output.shape == (1, 3, 64, 64), \
            "Color output shape mismatch"
-    assert semantic_output.shape == (1, 99), \
+    assert semantic_output.shape == (1, 1000), \
            "Semantic output shape mismatch"
     print(f"Color output shape: {color_output.shape}")
     print(f"Semantic output shape: {semantic_output.shape}")
