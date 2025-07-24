@@ -1,8 +1,7 @@
-torch
-torchvision
-pillow
-pytest
-flake8
-# Дополнительные зависимости для метрик и тестирования
-pytorch-msssim
-lpips
+torch>=1.13.0
+torchvision>=0.14.0
+pillow>=9.0.0
+pytest>=7.0.0
+flake8>=5.0.0
+pytorch-msssim>=0.2.0
+lpips>=0.1.4
