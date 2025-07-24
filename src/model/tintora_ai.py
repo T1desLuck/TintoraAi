@@ -127,15 +127,19 @@ class ObjectClassifier(nn.Module):
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((8, 8))
         self.fc1 = nn.Linear(256 * 8 * 8, 512)
         self.fc2 = nn.Linear(512, num_classes)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
+        if x.shape[2] < 64 or x.shape[3] < 64:
+            raise ValueError("Input image too small. Minimum size is 64x64")
         x = self.pool(self.relu(self.conv1(x)))
         x = self.pool(self.relu(self.conv2(x)))
         x = self.pool(self.relu(self.conv3(x)))
+        x = self.adaptive_pool(x)
         x = x.view(x.size(0), -1)
         x = self.dropout(self.relu(self.fc1(x)))
         x = self.fc2(x)
