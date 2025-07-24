@@ -24,15 +24,27 @@ jobs:
       - name: Check dependency compatibility
         run: |
           pip check || { echo "Dependency conflicts detected"; exit 1; }
-      - name: Check memory
-        run: free -h
+      - name: Debug PYTHONPATH and dependencies
+        run: |
+          echo "PYTHONPATH: $PYTHONPATH"
+          echo "Current directory: $(pwd)"
+          ls -R src/ tests/
+          python -c "import torch; import torchvision; import PIL; import pytest; import flake8; import pytorch_msssim; import lpips; print('All dependencies imported successfully')"
+      - name: Check system resources
+        run: |
+          echo "Memory usage:"
+          free -h
+          echo "CPU info:"
+          cat /proc/cpuinfo
+          echo "Disk usage:"
+          df -h
       - name: Run linter
         run: |
           echo "Running flake8 on src/ and tests/"
-          flake8 src/ tests/ || true
+          flake8 src/ tests/ || { echo "Flake8 failed"; exit 1; }
       - name: Run tests
         run: |
           cd $GITHUB_WORKSPACE
           export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/src
           pytest tests/ --rootdir=$GITHUB_WORKSPACE -s
-        timeout-minutes: 10
+        timeout-minutes: 15
