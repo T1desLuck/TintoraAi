@@ -21,18 +21,18 @@ class ColorizationDataset(Dataset):
         if not self.bw_images:
             raise ValueError(f"В папке {bw_path} нет изображений .jpg или .png")
 
-    self.color_images = [p.replace("bw", "color") for p in self.bw_images]
-    self.label_images = [p.replace("bw", label_path).replace(".jpg", ".npy") for p in self.bw_images]
+        self.color_images = [p.replace("bw", "color") for p in self.bw_images]
+        self.label_images = [p.replace("bw", label_path).replace(".jpg", ".npy") for p in self.bw_images]
 
-    # Проверяем каждый файл
-    for color_img in self.color_images:
-        if not os.path.exists(color_img):
-            raise FileNotFoundError(f"Цветное изображение отсутствует: {color_img}")
-    for label_img in self.label_images:
-        if not os.path.exists(label_img):
-            raise FileNotFoundError(f"Метка отсутствует: {label_img}")
+        # Проверяем каждый файл
+        for color_img in self.color_images:
+            if not os.path.exists(color_img):
+                raise FileNotFoundError(f"Цветное изображение отсутствует: {color_img}")
+        for label_img in self.label_images:
+            if not os.path.exists(label_img):
+                raise FileNotFoundError(f"Метка отсутствует: {label_img}")
 
-    self.transform = transform
+        self.transform = transform
 
     def __len__(self):
         return len(self.bw_images)
