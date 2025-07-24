@@ -30,7 +30,7 @@ class Discriminator(nn.Module):
 
 
 def train_model(data_path, epochs=10, batch_size=8,
-                save_path="colorizer_weights.pth", num_classes=99):
+                save_path="colorizer_weights.pth", num_classes=1000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transform = transforms.Compose([
