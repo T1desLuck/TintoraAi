@@ -31,7 +31,7 @@ class AttentionBlock(nn.Module):
         batch, c, h, w = x.size()
         if h * w == 0:  # Если изображение слишком маленькое
             return x  # Пропускаем механизм внимания
-    
+
         query = self.query_conv(x).view(batch, -1, h * w)
         key = self.key_conv(x).view(batch, -1, h * w)
         value = self.value_conv(x).view(batch, c, h * w)
