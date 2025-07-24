@@ -49,6 +49,8 @@ def main():
     # Загрузка и обработка изображения
     image = Image.open(args.input)
     input_tensor, original_size = preprocess_image(image)
+    if input_tensor.shape[2] < 64 or input_tensor.shape[3] < 64:
+        raise ValueError("Изображение слишком маленькое. Минимальный размер 64x64 пикселей")
     input_tensor = input_tensor.to(device)
 
     with torch.no_grad():
