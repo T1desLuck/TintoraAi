@@ -26,7 +26,7 @@ class ColorizationDataset(Dataset):
         bw_img = Image.open(self.bw_images[idx]).convert("L")
         color_img = Image.open(self.color_images[idx]).convert("RGB")
         label = np.load(self.label_images[idx])  # Метки как .npy
-        if np.max(label) >= 1000:  # Проверка на превышение
+        if np.max(label) >= num_classes:  # Проверка на превышение
             raise ValueError("Метки должны быть в диапазоне 0-999 для 1000 классов")
         if self.transform:
             bw_img = self.transform(bw_img)
