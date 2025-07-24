@@ -40,6 +40,11 @@ class ColorizationDataset(Dataset):
     def __getitem__(self, idx):
         bw_img = Image.open(self.bw_images[idx]).convert("L")
         color_img = Image.open(self.color_images[idx]).convert("RGB")
+        w, h = bw_img.size
+        if w < 256 or h < 256:
+            raise ValueError(f"Image {self.bw_images[idx]} too small. Minimum size is 256x256")
+        if color_img.size != (w, h):
+            raise ValueError(f"Color image {self.color_images[idx]} size does not match BW image")
         label = np.load(self.label_images[idx])  # Метки как .npy
         if np.max(label) >= 1000:  # Проверка на превышение
             raise ValueError("Метки должны быть в диапазоне 0-999 для 1000 классов")
