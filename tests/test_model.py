@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.model.tintora_ai import TintoraAI, ObjectClassifier
+from src.model.tintora_ai import ObjectClassifier
 
 
 class LightweightUNet(nn.Module):
