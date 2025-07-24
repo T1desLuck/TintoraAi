@@ -30,7 +30,7 @@ TintoraAI — это программа, которая:
 - `bw/`: Чёрно-белые изображения (`.jpg` или `.png`, минимум 256x256 пикселей).
 - `color/`: Цветные версии тех же изображений (те же имена файлов).
 - `labels/`: Метки объектов в формате `.npy` (числа от 0 до 999, например, из ImageNet).
-Подробности и примеры — в [TRAINING.md](TRAINING.md).
+Подробности и примеры — в [TRAINING.md](TRAINING.md). [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/15_geSdpK33UzI1ndn2nzQvIhXRggHAFv?usp=sharing)
 
 ## Как помочь проекту
 Хочешь улучшить TintoraAI? Читай [CONTRIBUTING.md](CONTRIBUTING.md), чтобы узнать, как добавить код, тесты или документацию.
