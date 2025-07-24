@@ -59,16 +59,20 @@ class UNet(nn.Module):
         self.attention2 = AttentionBlock(1024)
 
         # Decoder
-        self.upconv4 = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
+        self.upconv4 = nn.ConvTranspose2d(1024, 512, kernel_size=2,
+                                        stride=2)
         self.dec4 = DoubleConv(1024, 512)
         self.attention3 = AttentionBlock(512)
-        self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
+        self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2,
+                                        stride=2)
         self.dec3 = DoubleConv(512, 256)
         self.attention4 = AttentionBlock(256)
-        self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
+        self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2,
+                                        stride=2)
         self.dec2 = DoubleConv(256, 128)
         self.attention5 = AttentionBlock(128)
-        self.upconv1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
+        self.upconv1 = nn.ConvTranspose2d(128, 64, kernel_size=2,
+                                        stride=2)
         self.dec1 = DoubleConv(128, 64)
         self.attention6 = AttentionBlock(64)
 
@@ -121,7 +125,7 @@ class ObjectClassifier(nn.Module):
         self.conv3 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.fc1 = nn.Linear(256 * 8 * 8, 512)
-        self.fc2 = nn.Linear(512, 1000)
+        self.fc2 = nn.Linear(512, num_classes)
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.5)
 
@@ -139,7 +143,7 @@ class TintoraAI(nn.Module):
     def __init__(self, num_classes=99):
         super(TintoraAI, self).__init__()
         self.unet = UNet()
-        self.classifier = ObjectClassifier(1000)
+        self.classifier = ObjectClassifier(num_classes)
 
     def forward(self, x):
         color_output = self.unet(x)
