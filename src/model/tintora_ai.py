@@ -28,15 +28,18 @@ class AttentionBlock(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
-        batch, c, h, w = x.size()
-        query = self.query_conv(x).view(batch, -1, h * w)
-        key = self.key_conv(x).view(batch, -1, h * w)
-        value = self.value_conv(x).view(batch, c, h * w)
-        energy = torch.bmm(query.transpose(1, 2), key)
-        attention = self.softmax(energy)
-        out = torch.bmm(value, attention)
-        out = out.view(batch, c, h, w)
-        return x + self.gamma * out
+    batch, c, h, w = x.size()
+    if h * w == 0:  # Если изображение слишком маленькое
+        return x  # Пропускаем механизм внимания
+    
+    query = self.query_conv(x).view(batch, -1, h * w)
+    key = self.key_conv(x).view(batch, -1, h * w)
+    value = self.value_conv(x).view(batch, c, h * w)
+    energy = torch.bmm(query.transpose(1, 2), key)
+    attention = self.softmax(energy)
+    out = torch.bmm(value, attention)
+    out = out.view(batch, c, h, w)
+    return x + self.gamma * out
 
 
 class UNet(nn.Module):
