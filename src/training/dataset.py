@@ -8,18 +8,18 @@ import torch
 
 class ColorizationDataset(Dataset):
     def __init__(self, bw_path, color_path, label_path, transform=None):
-    # Проверяем, что папки существуют
-    if not os.path.exists(bw_path):
-        raise FileNotFoundError(f"Папка с ЧБ изображениями не найдена: {bw_path}")
-    if not os.path.exists(color_path):
-        raise FileNotFoundError(f"Папка с цветными изображениями не найдена: {color_path}")
-    if not os.path.exists(label_path):
-        raise FileNotFoundError(f"Папка с метками не найдена: {label_path}")
+        # Проверяем, что папки существуют
+        if not os.path.exists(bw_path):
+            raise FileNotFoundError(f"Папка с ЧБ изображениями не найдена: {bw_path}")
+        if not os.path.exists(color_path):
+            raise FileNotFoundError(f"Папка с цветными изображениями не найдена: {color_path}")
+        if not os.path.exists(label_path):
+            raise FileNotFoundError(f"Папка с метками не найдена: {label_path}")
 
-    # Ищем файлы (поддержка .jpg и .png)
-    self.bw_images = sorted(glob.glob(os.path.join(bw_path, "*.[jp][pn]g")))
-    if not self.bw_images:
-        raise ValueError(f"В папке {bw_path} нет изображений .jpg или .png")
+        # Ищем файлы (поддержка .jpg и .png)
+        self.bw_images = sorted(glob.glob(os.path.join(bw_path, "*.[jp][pn]g")))
+        if not self.bw_images:
+            raise ValueError(f"В папке {bw_path} нет изображений .jpg или .png")
 
     self.color_images = [p.replace("bw", "color") for p in self.bw_images]
     self.label_images = [p.replace("bw", label_path).replace(".jpg", ".npy") for p in self.bw_images]
