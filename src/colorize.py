@@ -80,7 +80,7 @@ def main():
 
     # Постобработка
     colored_image = postprocess_image(color_output, original_size, args.saturation)
-    
+
     # Применение стиля
     if args.style != "neutral":
         colored_image = apply_color_filter(colored_image, args.style)
