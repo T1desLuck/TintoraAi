@@ -118,7 +118,7 @@ class UNet(nn.Module):
 
 
 class ObjectClassifier(nn.Module):
-    def __init__(self, num_classes=99):
+    def __init__(self, num_classes=1000):
         super(ObjectClassifier, self).__init__()
         self.conv1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -140,7 +140,7 @@ class ObjectClassifier(nn.Module):
 
 
 class TintoraAI(nn.Module):
-    def __init__(self, num_classes=99):
+    def __init__(self, num_classes=1000):
         super(TintoraAI, self).__init__()
         self.unet = UNet()
         self.classifier = ObjectClassifier(num_classes)
