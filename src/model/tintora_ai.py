@@ -154,7 +154,7 @@ class TintoraAI(nn.Module):
 
     def forward(self, x):
         if x.shape[2] < 256 or x.shape[3] < 256:
-    raise ValueError("Input image too small. Minimum size is 256x256")
+            raise ValueError("Input image too small. Minimum size is 256x256")
         color_output = self.unet(x)
         semantic_output = self.classifier(x)
         return color_output, semantic_output
