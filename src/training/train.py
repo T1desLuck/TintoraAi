@@ -121,4 +121,4 @@ if __name__ == "__main__":
                         help="Number of classes for semantic output")
     args = parser.parse_args()
     train_model(args.data_path, args.epochs, args.batch_size,
-                num_classes=args.1000)
+                num_classes=args.num_classes)
