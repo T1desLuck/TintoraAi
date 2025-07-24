@@ -62,11 +62,12 @@ def train_model(data_path, epochs=10, batch_size=8,
     def perceptual_loss(output, target):
         vgg_layers = [2, 7, 12]
         loss = 0
-        for layer in vgg_layers:
-            vgg_output = vgg[:layer](output)
-            vgg_target = vgg[:layer](target)
-            loss += F.mse_loss(vgg_output, vgg_target)
-        return loss / len(vgg_layers)
+        with torch.no_grad():  # Отключаем градиенты для VGG
+            for layer in vgg_layers:
+                vgg_output = vgg[:layer](output)
+                vgg_target = vgg[:layer](target)
+                loss += F.mse_loss(vgg_output, vgg_target)
+            return loss / len(vgg_layers)
 
     for epoch in range(epochs):
         for bw_imgs, color_imgs, labels in dataloader:
