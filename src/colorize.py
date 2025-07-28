@@ -22,7 +22,10 @@ def apply_color_filter(image, style):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="TintoraAI: Colorization of photos")
+    parser = argparse.ArgumentParser(
+        description=("TintoraAI: Neural network for colorizing "
+                     "black-and-white or faded photos")
+    )
     parser.add_argument("--input", type=str, required=True, help="Path to input image")
     parser.add_argument("--output", type=str, default="colored_image.jpg", help="Path to save output image")
     parser.add_argument("--saturation", type=float, default=1.0, help="Color saturation (0.5-2.0)")
@@ -32,7 +35,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Загрузка модели
-    model = TintoraAI(num_classes=100).to(device)  # Изменено на 100 классов
+    model = TintoraAI(num_classes=100).to(device)
     try:
         model.load_state_dict(torch.load("colorizer_weights.pth", map_location=device))
     except FileNotFoundError:
