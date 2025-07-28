@@ -1,135 +1,121 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-from torchvision import models, transforms
-import torch.nn.functional as F
-from src.model.tintora_ai import TintoraAI
-from src.training.dataset import ColorizationDataset
-import argparse
+from torch.utils.data import Dataset, DataLoader
+from PIL import Image
 import os
-import random
+import numpy as np
+import argparse
+from tqdm import tqdm
+from pytorch_msssim import ssim
+import lpips
+from src.model.tintora_ai import TintoraAI
+from src.model.preprocess import preprocess_image
 
 
-class Discriminator(nn.Module):
-    def __init__(self):
-        super(Discriminator, self).__init__()
-        self.model = nn.Sequential(
-            nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(256, 1, kernel_size=4, stride=1, padding=0),
-            nn.Sigmoid()
-        )
+class TintoraDataset(Dataset):
+    def __init__(self, data_path, transform=None):
+        self.data_path = data_path
+        self.transform = transform
+        self.bw_path = os.path.join(data_path, "bw")
+        self.color_path = os.path.join(data_path, "color")
+        self.label_path = os.path.join(data_path, "labels")
+        self.images = sorted([f for f in os.listdir(self.bw_path) if f.endswith((".jpg", ".png"))])
+        self.labels = [f.replace(".jpg", ".npy").replace(".png", ".npy") for f in self.images]
 
-    def forward(self, x):
-        return self.model(x)
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        try:
+            bw_image = Image.open(os.path.join(self.bw_path, self.images[idx])).convert("L")
+            color_image = Image.open(os.path.join(self.color_path, self.images[idx])).convert("RGB")
+            label = np.load(os.path.join(self.label_path, self.labels[idx]))[0]
+            if bw_image.size != (512, 512) or color_image.size != (512, 512):
+                raise ValueError(f"Image {self.images[idx]} size mismatch, expected 512x512")
+            bw_tensor, _ = preprocess_image(bw_image, min_size=512)
+            color_tensor = torch.from_numpy(np.array(color_image) / 255.0).permute(2, 0, 1).float()
+            return bw_tensor, color_tensor, label
+        except Exception as e:
+            print(f"Error loading {self.images[idx]}: {e}")
+            return None
 
 
-def train_model(data_path, epochs=10, batch_size=8,
-                save_path="colorizer_weights.pth", num_classes=1000):
+def main():
+    parser = argparse.ArgumentParser(description="Train TintoraAI")
+    parser.add_argument("--data_path", type=str, required=True, help="Path to dataset (bw/, color/, labels/)")
+    parser.add_argument("--save_path", type=str, default="models/colorizer_weights.pth", help="Path to save weights")
+    parser.add_argument("--epochs", type=int, default=20, help="Number of epochs")
+    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
+    parser.add_argument("--accum_steps", type=int, default=4, help="Gradient accumulation steps")
+    args = parser.parse_args()
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    def get_transform():
-        size = random.choice([256, 512])
-        return transforms.Compose([
-            transforms.Resize((size, size)),
-            transforms.ToTensor()
-        ])
-
-    try:
-        dataset = ColorizationDataset(
-            bw_path=os.path.join(data_path, "bw"),
-            color_path=os.path.join(data_path, "color"),
-            label_path=os.path.join(data_path, "labels"),
-            transform=get_transform()
-        )
-    except Exception as e:
-        print(f"Error loading dataset: {e}")
-        return
-
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-    generator = TintoraAI(num_classes=1000).to(device)
-    discriminator = Discriminator().to(device)
-    optimizer_g = torch.optim.Adam(generator.parameters(), lr=1e-4)
-    optimizer_d = torch.optim.Adam(discriminator.parameters(), lr=1e-4)
-
-    vgg = models.vgg16(weights='IMAGENET1K_V1').features.to(device).eval()
-    for param in vgg.parameters():
-        param.requires_grad = False
-
+    model = TintoraAI(num_classes=100).to(device)
     criterion_color = nn.MSELoss()
-    criterion_semantic = nn.CrossEntropyLoss()
-    criterion_gan = nn.BCELoss()
+    criterion_class = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    loss_fn_lpips = lpips.LPIPS(net="alex").to(device)
 
-    def perceptual_loss(output, target):
-        vgg_layers = [2, 7, 12]
-        loss = 0
-        with torch.no_grad():
-            for layer in vgg_layers:
-                vgg_output = vgg[:layer](output)
-                vgg_target = vgg[:layer](target)
-                loss += F.mse_loss(vgg_output, vgg_target)
-            return loss / len(vgg_layers)
+    dataset = TintoraDataset(args.data_path)
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
-    for epoch in range(epochs):
-        for bw_imgs, color_imgs, labels in dataloader:
-            try:
-                bw_imgs, color_imgs, labels = (
-                    bw_imgs.to(device),
-                    color_imgs.to(device),
-                    labels.to(device)
-                )
+    for epoch in range(args.epochs):
+        model.train()
+        running_loss_color = 0.0
+        running_loss_class = 0.0
+        running_ssim = 0.0
+        running_lpips = 0.0
+        batch_count = 0
+        optimizer.zero_grad()
 
-                # Train Discriminator
-                optimizer_d.zero_grad()
-                real_validity = discriminator(color_imgs)
-                fake_imgs, _ = generator(bw_imgs)
-                fake_validity = discriminator(fake_imgs.detach())
-                d_loss = (criterion_gan(real_validity, torch.ones_like(real_validity)) +
-                          criterion_gan(fake_validity, torch.zeros_like(fake_validity))) / 2
-                d_loss.backward()
-                optimizer_d.step()
-
-                # Train Generator
-                optimizer_g.zero_grad()
-                fake_imgs, semantic_output = generator(bw_imgs)
-                fake_validity = discriminator(fake_imgs)
-                pixel_loss = criterion_color(fake_imgs, color_imgs)
-                perc_loss = perceptual_loss(fake_imgs, color_imgs)
-                g_color_loss = 0.7 * pixel_loss + 0.3 * perc_loss
-                g_semantic_loss = criterion_semantic(semantic_output, labels)
-                g_gan_loss = criterion_gan(fake_validity, torch.ones_like(fake_validity))
-                total_loss = (g_color_loss +
-                              0.1 * g_semantic_loss +
-                              0.1 * g_gan_loss)
-                total_loss.backward()
-                optimizer_g.step()
-            except Exception as e:
-                print(f"Error in training loop: {e}")
+        for i, batch in enumerate(tqdm(dataloader, desc=f"Epoch {epoch+1}/{args.epochs}")):
+            if batch is None:
                 continue
+            bw_images, color_images, labels = batch
+            bw_images, color_images, labels = bw_images.to(device), color_images.to(device), labels.to(device)
 
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss.item()}")
+            color_output, semantic_output = model(bw_images)
+            loss_color = criterion_color(color_output, color_images)
+            loss_class = criterion_class(semantic_output, labels)
+            loss = loss_color + loss_class
 
-    torch.save(generator.state_dict(), save_path)
-    return generator
+            loss = loss / args.accum_steps
+            loss.backward()
+
+            if (i + 1) % args.accum_steps == 0:
+                optimizer.step()
+                optimizer.zero_grad()
+
+            running_loss_color += loss_color.item()
+            running_loss_class += loss_class.item()
+            ssim_val = ssim(color_output, color_images, data_range=1.0, size_average=True)
+            running_ssim += ssim_val.item()
+            lpips_val = loss_fn_lpips(color_output, color_images).mean()
+            running_lpips += lpips_val.item()
+            batch_count += 1
+
+        avg_loss_color = running_loss_color / batch_count
+        avg_loss_class = running_loss_class / batch_count
+        avg_ssim = running_ssim / batch_count
+        avg_lpips = running_lpips / batch_count
+        print(f"Epoch {epoch+1}/{args.epochs}, Color Loss: {avg_loss_color:.4f}, Class Loss: {avg_loss_class:.4f}, SSIM: {avg_ssim:.4f}, LPIPS: {avg_lpips:.4f}")
+
+        if (epoch + 1) % 5 == 0:
+            checkpoint_path = f"models/checkpoint_epoch_{epoch+1}.pth"
+            os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
+            torch.save({
+                'epoch': epoch + 1,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'color_loss': avg_loss_color,
+                'class_loss': avg_loss_class,
+            }, checkpoint_path)
+            print(f"Checkpoint saved to {checkpoint_path}")
+
+    os.makedirs(os.path.dirname(args.save_path), exist_ok=True)
+    torch.save(model.state_dict(), args.save_path)
+    print(f"Final model saved to {args.save_path}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train TintoraAI model")
-    parser.add_argument("--data_path", type=str, required=True,
-                        help="Path to dataset")
-    parser.add_argument("--epochs", type=int, default=10,
-                        help="Number of epochs")
-    parser.add_argument("--batch_size", type=int, default=8,
-                        help="Batch size")
-    parser.add_argument("--num_classes", type=int, default=1000,
-                        help="Number of classes for semantic output")
-    args = parser.parse_args()
-    train_model(args.data_path, args.epochs, args.batch_size,
-                num_classes=args.num_classes)
+    main()
