@@ -29,9 +29,8 @@ class AttentionBlock(nn.Module):
 
     def forward(self, x):
         batch, c, h, w = x.size()
-        if h * w == 0:  # Если изображение слишком маленькое
-            return x  # Пропускаем механизм внимания
-
+        if h * w == 0:
+            return x
         query = self.query_conv(x).view(batch, -1, h * w)
         key = self.key_conv(x).view(batch, -1, h * w)
         value = self.value_conv(x).view(batch, c, h * w)
@@ -45,8 +44,6 @@ class AttentionBlock(nn.Module):
 class UNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=3):
         super(UNet, self).__init__()
-
-        # Encoder
         self.enc1 = DoubleConv(in_channels, 64)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.enc2 = DoubleConv(64, 128)
@@ -55,35 +52,24 @@ class UNet(nn.Module):
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
         self.enc4 = DoubleConv(256, 512)
         self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        # Bottleneck
         self.bottleneck = DoubleConv(512, 1024)
         self.attention1 = AttentionBlock(1024)
         self.attention2 = AttentionBlock(1024)
-
-        # Decoder
-        self.upconv4 = nn.ConvTranspose2d(
-            1024, 512, kernel_size=2, stride=2)
+        self.upconv4 = nn.ConvTranspose2d(1024, 512, kernel_size=2, stride=2)
         self.dec4 = DoubleConv(1024, 512)
         self.attention3 = AttentionBlock(512)
-        self.upconv3 = nn.ConvTranspose2d(
-            512, 256, kernel_size=2, stride=2)
+        self.upconv3 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2)
         self.dec3 = DoubleConv(512, 256)
         self.attention4 = AttentionBlock(256)
-        self.upconv2 = nn.ConvTranspose2d(
-            256, 128, kernel_size=2, stride=2)
+        self.upconv2 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2)
         self.dec2 = DoubleConv(256, 128)
         self.attention5 = AttentionBlock(128)
-        self.upconv1 = nn.ConvTranspose2d(
-            128, 64, kernel_size=2, stride=2)
+        self.upconv1 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
         self.dec1 = DoubleConv(128, 64)
         self.attention6 = AttentionBlock(64)
-
-        # Final layer
         self.out = nn.Conv2d(64, out_channels, kernel_size=1)
 
     def forward(self, x):
-        # Encoder
         e1 = self.enc1(x)
         p1 = self.pool1(e1)
         e2 = self.enc2(p1)
@@ -92,13 +78,9 @@ class UNet(nn.Module):
         p3 = self.pool3(e3)
         e4 = self.enc4(p3)
         p4 = self.pool4(e4)
-
-        # Bottleneck
         b = self.bottleneck(p4)
         b = self.attention1(b)
         b = self.attention2(b)
-
-        # Decoder
         d4 = self.upconv4(b)
         d4 = torch.cat([d4, e4], dim=1)
         d4 = self.dec4(d4)
@@ -115,13 +97,12 @@ class UNet(nn.Module):
         d1 = torch.cat([d1, e1], dim=1)
         d1 = self.dec1(d1)
         d1 = self.attention6(d1)
-
         out = self.out(d1)
         return torch.sigmoid(out)
 
 
 class ObjectClassifier(nn.Module):
-    def __init__(self, num_classes=1000):
+    def __init__(self, num_classes=100):  # Изменено на 100 классов
         super(ObjectClassifier, self).__init__()
         self.conv1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -147,7 +128,7 @@ class ObjectClassifier(nn.Module):
 
 
 class TintoraAI(nn.Module):
-    def __init__(self, num_classes=1000):
+    def __init__(self, num_classes=100):  # Изменено на 100 классов
         super(TintoraAI, self).__init__()
         self.unet = UNet()
         self.classifier = ObjectClassifier(num_classes)
