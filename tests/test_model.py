@@ -65,7 +65,7 @@ def test_double_conv():
 def test_attention_block():
     print("Starting test_attention_block")
     model = AttentionBlock(channels=64)
-    input_tensor = torch.randn(1, 64, 128, 128)  # Уменьшен размер для скорости
+    input_tensor = torch.randn(1, 64, 128, 128)
     output = model(input_tensor)
     assert output.shape == (1, 64, 128, 128), "AttentionBlock output shape mismatch"
     print("AttentionBlock test passed")
@@ -74,7 +74,7 @@ def test_attention_block():
 def test_unet():
     print("Starting test_unet")
     model = UNet(in_channels=1, out_channels=3)
-    input_tensor = torch.randn(1, 1, 256, 256)  # Уменьшен с 512x512 до 256x256
+    input_tensor = torch.randn(1, 1, 128, 128)  # Уменьшен с 256x256 до 128x128 для CI
     output = model(input_tensor)
-    assert output.shape == (1, 3, 256, 256), "UNet output shape mismatch"
+    assert output.shape == (1, 3, 128, 128), "UNet output shape mismatch"
     print("UNet test passed")
