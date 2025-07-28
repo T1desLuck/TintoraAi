@@ -98,7 +98,9 @@ def main():
         avg_loss_class = running_loss_class / batch_count
         avg_ssim = running_ssim / batch_count
         avg_lpips = running_lpips / batch_count
-        print(f"Epoch {epoch+1}/{args.epochs}, Color Loss: {avg_loss_color:.4f}, Class Loss: {avg_loss_class:.4f}, SSIM: {avg_ssim:.4f}, LPIPS: {avg_lpips:.4f}")
+        print(f"Epoch {epoch+1}/{args.epochs}, Color Loss: {avg_loss_color:.4f}, "
+              f"Class Loss: {avg_loss_class:.4f}, SSIM: {avg_ssim:.4f}, "
+              f"LPIPS: {avg_lpips:.4f}")
 
         if (epoch + 1) % 5 == 0:
             checkpoint_path = f"models/checkpoint_epoch_{epoch+1}.pth"
