@@ -29,7 +29,8 @@ def main():
     parser.add_argument("--input", type=str, required=True, help="Path to input image")
     parser.add_argument("--output", type=str, default="colored_image.jpg", help="Path to save output image")
     parser.add_argument("--saturation", type=float, default=1.0, help="Color saturation (0.5-2.0)")
-    parser.add_argument("--style", type=str, default="neutral", choices=["modern", "vintage", "neutral"], help="Colorization style")
+    parser.add_argument("--style", type=str, default="neutral", 
+                        choices=["modern", "vintage", "neutral"], help="Colorization style")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
