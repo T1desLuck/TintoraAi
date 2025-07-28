@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.model.tintora_ai import ObjectClassifier, DoubleConv, AttentionBlock, UNet, TintoraAI
+from src.model.tintora_ai import ObjectClassifier, DoubleConv, AttentionBlock, UNet
 
 
 class LightweightUNet(nn.Module):
@@ -20,7 +20,7 @@ class LightweightUNet(nn.Module):
 
 
 class LightweightTintoraAI(nn.Module):
-    def __init__(self, num_classes=100):  # Изменено на 100 классов
+    def __init__(self, num_classes=100):
         super(LightweightTintoraAI, self).__init__()
         self.unet = LightweightUNet()
         self.classifier = ObjectClassifier(num_classes)
@@ -35,7 +35,7 @@ class LightweightTintoraAI(nn.Module):
 
 def test_model_forward():
     print("Starting test_model_forward")
-    model = LightweightTintoraAI(num_classes=100)  # Изменено на 100 классов
+    model = LightweightTintoraAI(num_classes=100)
     size = 256
     print(f"Testing input size {size}x{size}")
     input_tensor = torch.randn(1, 1, size, size)
