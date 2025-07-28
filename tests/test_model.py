@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.model.tintora_ai import ObjectClassifier
+from src.model.tintora_ai import ObjectClassifier, DoubleConv, AttentionBlock, UNet, TintoraAI
 
 
 class LightweightUNet(nn.Module):
@@ -20,7 +20,7 @@ class LightweightUNet(nn.Module):
 
 
 class LightweightTintoraAI(nn.Module):
-    def __init__(self, num_classes=1000):
+    def __init__(self, num_classes=100):  # Изменено на 100 классов
         super(LightweightTintoraAI, self).__init__()
         self.unet = LightweightUNet()
         self.classifier = ObjectClassifier(num_classes)
@@ -35,7 +35,7 @@ class LightweightTintoraAI(nn.Module):
 
 def test_model_forward():
     print("Starting test_model_forward")
-    model = LightweightTintoraAI(num_classes=1000)
+    model = LightweightTintoraAI(num_classes=100)  # Изменено на 100 классов
     size = 256
     print(f"Testing input size {size}x{size}")
     input_tensor = torch.randn(1, 1, size, size)
@@ -43,7 +43,7 @@ def test_model_forward():
         color_output, semantic_output = model(input_tensor)
         assert color_output.shape == (1, 3, size, size), \
                f"Color output shape mismatch for size {size}x{size}"
-        assert semantic_output.shape == (1, 1000), \
+        assert semantic_output.shape == (1, 100), \
                f"Semantic output shape mismatch for size {size}x{size}"
         print(f"Color output shape: {color_output.shape}")
         print(f"Semantic output shape: {semantic_output.shape}")
@@ -51,3 +51,30 @@ def test_model_forward():
         print(f"Error testing size {size}x{size}: {e}")
         raise
     print("Test completed successfully")
+
+
+def test_double_conv():
+    print("Starting test_double_conv")
+    model = DoubleConv(in_channels=1, out_channels=64)
+    input_tensor = torch.randn(1, 1, 256, 256)
+    output = model(input_tensor)
+    assert output.shape == (1, 64, 256, 256), "DoubleConv output shape mismatch"
+    print("DoubleConv test passed")
+
+
+def test_attention_block():
+    print("Starting test_attention_block")
+    model = AttentionBlock(channels=64)
+    input_tensor = torch.randn(1, 64, 256, 256)
+    output = model(input_tensor)
+    assert output.shape == (1, 64, 256, 256), "AttentionBlock output shape mismatch"
+    print("AttentionBlock test passed")
+
+
+def test_unet():
+    print("Starting test_unet")
+    model = UNet(in_channels=1, out_channels=3)
+    input_tensor = torch.randn(1, 1, 512, 512)
+    output = model(input_tensor)
+    assert output.shape == (1, 3, 512, 512), "UNet output shape mismatch"
+    print("UNet test passed")
