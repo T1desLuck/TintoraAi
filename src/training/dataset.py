@@ -46,8 +46,8 @@ class ColorizationDataset(Dataset):
         if color_img.size != (w, h):
             raise ValueError(f"Color image {self.color_images[idx]} size does not match BW image")
         label = np.load(self.label_images[idx])  # Метки как .npy
-        if np.max(label) >= 1000:  # Проверка на превышение
-            raise ValueError("Метки должны быть в диапазоне 0-999 для 1000 классов")
+        if np.max(label) >= 100:  # Проверка на превышение
+            raise ValueError("Метки должны быть в диапазоне 0-99 для 100 классов")
         if self.transform:
             bw_img = self.transform(bw_img)
             color_img = self.transform(color_img)
