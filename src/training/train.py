@@ -11,6 +11,8 @@ import lpips
 from src.model.tintora_ai import TintoraAI
 from src.model.preprocess import preprocess_image
 from torch.cuda.amp import autocast, GradScaler
+import sys  # Добавляем импорт sys
+
 
 class TintoraDataset(Dataset):
     def __init__(self, data_path, transform=None):
@@ -26,8 +28,10 @@ class TintoraDataset(Dataset):
         if not self.images:
             raise ValueError("Нет изображений в папке bw")
 
+
     def __len__(self):
         return len(self.images)
+
 
     def __getitem__(self, idx):
         try:
@@ -43,6 +47,7 @@ class TintoraDataset(Dataset):
         except Exception as e:
             print(f"Error loading {self.images[idx]}: {e}")
             return None
+
 
 def main():
     parser = argparse.ArgumentParser(description="Train TintoraAI")
@@ -69,6 +74,7 @@ def main():
 
     dataset = TintoraDataset(args.data_path)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+
 
     for epoch in range(args.epochs):
         model.train()
@@ -133,9 +139,11 @@ def main():
             }, checkpoint_path)
             print(f"Checkpoint saved to {checkpoint_path}")
 
+
     os.makedirs(os.path.dirname(args.save_path), exist_ok=True)
     torch.save(model.state_dict(), args.save_path)
     print(f"Final model saved to {args.save_path}")
+
 
 if __name__ == "__main__":
     main()
