@@ -7,12 +7,10 @@ import numpy as np
 import argparse
 from tqdm import tqdm
 from pytorch_msssim import ssim
-import lpips
 from src.model.tintora_ai import TintoraAI
 from src.model.preprocess import preprocess_image
 from torch.amp import autocast, GradScaler
 import sys
-import torchvision
 
 
 class TintoraDataset(Dataset):
@@ -65,17 +63,7 @@ def main():
     criterion_class = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     scaler = GradScaler('cuda')
-    try:
-        # Проверка версии torchvision для выбора правильного параметра
-        torchvision_version = tuple(int(x) for x in torchvision.__version__.split('.')[:2])
-        if torchvision_version >= (0, 13):
-            from torchvision.models import AlexNet_Weights
-            loss_fn_lpips = lpips.LPIPS(net="alex", weights=AlexNet_Weights.IMAGENET1K_V1).to(device)
-        else:
-            loss_fn_lpips = lpips.LPIPS(net="alex", pretrained=True).to(device)
-    except Exception as e:
-        print(f"Ошибка загрузки LPIPS: {e}")
-        sys.exit(1)
+    print("LPIPS отключён для исключения предобученных весов")
 
     dataset = TintoraDataset(args.data_path)
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
@@ -85,7 +73,6 @@ def main():
         running_loss_color = 0.0
         running_loss_class = 0.0
         running_ssim = 0.0
-        running_lpips = 0.0
         batch_count = 0
         optimizer.zero_grad()
 
@@ -103,7 +90,6 @@ def main():
                 loss_color = criterion_color(color_output, color_images)
                 loss_class = criterion_class(semantic_output, labels)
                 loss = loss_color + loss_class
-                lpips_val = loss_fn_lpips(color_output, color_images).mean()
 
             loss = loss / args.accum_steps
             scaler.scale(loss).backward()
@@ -117,7 +103,6 @@ def main():
             running_loss_class += loss_class.item()
             ssim_val = ssim(color_output, color_images, data_range=1.0, size_average=True)
             running_ssim += ssim_val.item()
-            running_lpips += lpips_val.item()
             batch_count += 1
 
         if batch_count == 0:
@@ -127,10 +112,8 @@ def main():
         avg_loss_color = running_loss_color / batch_count
         avg_loss_class = running_loss_class / batch_count
         avg_ssim = running_ssim / batch_count
-        avg_lpips = running_lpips / batch_count
         print(f"Epoch {epoch+1}/{args.epochs}, Color Loss: {avg_loss_color:.4f}, "
-              f"Class Loss: {avg_loss_class:.4f}, SSIM: {avg_ssim:.4f}, "
-              f"LPIPS: {avg_lpips:.4f}")
+              f"Class Loss: {avg_loss_class:.4f}, SSIM: {avg_ssim:.4f}")
 
         if (epoch + 1) % 5 == 0:
             checkpoint_path = f"models/checkpoint_epoch_{epoch+1}.pth"
