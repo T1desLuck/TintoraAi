@@ -25,4 +25,5 @@ def preprocess_image(image, pad_divisor=8, min_size=256):
                   .float()
                   .unsqueeze(0)
                   .unsqueeze(0))
+    print(f"Preprocessed tensor size: {img_tensor.shape}")
     return img_tensor, (w, h)
