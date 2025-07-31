@@ -102,7 +102,7 @@ class UNet(nn.Module):
 
 
 class ObjectClassifier(nn.Module):
-    def __init__(self, num_classes=100):  # Изменено на 100 классов
+    def __init__(self, num_classes=100):
         super(ObjectClassifier, self).__init__()
         self.conv1 = nn.Conv2d(1, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -128,14 +128,13 @@ class ObjectClassifier(nn.Module):
 
 
 class TintoraAI(nn.Module):
-    def __init__(self, num_classes=100):  # Изменено на 100 классов
+    def __init__(self, num_classes=100):
         super(TintoraAI, self).__init__()
         self.unet = UNet()
         self.classifier = ObjectClassifier(num_classes)
 
     def forward(self, x):
-        if x.shape[2] < 256 or x.shape[3] < 256:
-            raise ValueError("Input image too small. Minimum size is 256x256")
+        print(f"Input tensor size: {x.shape}")
         color_output = self.unet(x)
         semantic_output = self.classifier(x)
         return color_output, semantic_output
