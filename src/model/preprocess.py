@@ -23,7 +23,6 @@ def preprocess_image(image, pad_divisor=8, min_size=256):
     img_array = np.array(padded_image) / 255.0
     img_tensor = (torch.from_numpy(img_array)
                   .float()
-                  .unsqueeze(0)
-                  .unsqueeze(0))
+                  .unsqueeze(0))  # Добавляем только одно измерение для канала
     print(f"Preprocessed tensor size: {img_tensor.shape}")
     return img_tensor, (w, h)
