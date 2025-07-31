@@ -10,8 +10,9 @@ from pytorch_msssim import ssim
 import lpips
 from src.model.tintora_ai import TintoraAI
 from src.model.preprocess import preprocess_image
-from torch.cuda.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 import sys
+from torchvision.models import AlexNet_Weights
 
 
 class TintoraDataset(Dataset):
@@ -63,9 +64,9 @@ def main():
     criterion_color = nn.MSELoss()
     criterion_class = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    scaler = GradScaler()  # Для смешанной точности
+    scaler = GradScaler('cuda')
     try:
-        loss_fn_lpips = lpips.LPIPS(net="alex").to(device)
+        loss_fn_lpips = lpips.LPIPS(net="alex", weights=AlexNet_Weights.IMAGENET1K_V1).to(device)
     except Exception as e:
         print(f"Ошибка загрузки LPIPS: {e}")
         sys.exit(1)
@@ -90,7 +91,8 @@ def main():
                 continue
             bw_images, color_images, labels = bw_images.to(device), color_images.to(device), labels.to(device)
 
-            with autocast():  # Смешанная точность
+            print(f"Batch tensor size: {bw_images.shape}")
+            with autocast('cuda'):
                 color_output, semantic_output = model(bw_images)
                 loss_color = criterion_color(color_output, color_images)
                 loss_class = criterion_class(semantic_output, labels)
