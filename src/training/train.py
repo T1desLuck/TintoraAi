@@ -12,7 +12,6 @@ from src.model.tintora_ai import TintoraAI
 from src.model.preprocess import preprocess_image
 from torch.amp import autocast, GradScaler
 import sys
-from torchvision.models import AlexNet_Weights
 
 
 class TintoraDataset(Dataset):
@@ -66,7 +65,7 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     scaler = GradScaler('cuda')
     try:
-        loss_fn_lpips = lpips.LPIPS(net="alex", weights=AlexNet_Weights.IMAGENET1K_V1).to(device)
+        loss_fn_lpips = lpips.LPIPS(net="alex", pretrained=True).to(device)
     except Exception as e:
         print(f"Ошибка загрузки LPIPS: {e}")
         sys.exit(1)
