@@ -2,6 +2,7 @@ from PIL import Image
 import torch
 import numpy as np
 
+
 def preprocess_image(image, pad_divisor=16, min_size=256):
     """Конвертирует изображение в ч/б и добавляет padding для совместимости с U-Net."""
     try:
