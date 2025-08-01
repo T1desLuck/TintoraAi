@@ -1,0 +1,9 @@
+data_path: /path/to/your/data
+save_path: models/colorizer_weights.pth
+epochs: 20
+batch_size: 1
+accum_steps: 32
+lr: 0.001
+num_classes: 100
+pad_divisor: 16
+num_workers: 4
