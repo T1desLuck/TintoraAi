@@ -43,7 +43,15 @@ class TintoraDataset(Dataset):
             return bw_tensor, color_tensor, torch.tensor(label, dtype=torch.long)
         except Exception as e:
             print(f"Error loading {self.images[idx]}: {e}")
-            return None
+            return None  # Возврат None вместо батча с ошибкой
+
+
+# Новый collate_fn — фильтруем None
+def filter_none_collate(batch):
+    batch = list(filter(lambda x: x is not None, batch))
+    if not batch:
+        return None
+    return torch.utils.data.dataloader.default_collate(batch)
 
 
 def main():
@@ -66,7 +74,12 @@ def main():
     print("LPIPS отключён для исключения предобученных весов")
 
     dataset = TintoraDataset(args.data_path)
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    dataloader = DataLoader(dataset,
+                            batch_size=args.batch_size,
+                            shuffle=True,
+                            num_workers=4,
+                            pin_memory=True,
+                            collate_fn=filter_none_collate)
 
     for epoch in range(args.epochs):
         model.train()
@@ -80,8 +93,6 @@ def main():
             if batch is None:
                 continue
             bw_images, color_images, labels = batch
-            if bw_images is None or color_images is None or labels is None:
-                continue
             bw_images, color_images, labels = bw_images.to(device), color_images.to(device), labels.to(device)
 
             print(f"Batch tensor size: {bw_images.shape}")
