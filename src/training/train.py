@@ -12,6 +12,7 @@ from torch.amp import autocast, GradScaler
 import yaml
 from torch.utils.checkpoint import checkpoint
 
+
 class TintoraDataset(Dataset):
     def __init__(self, data_path, pad_divisor=16):
         self.data_path = data_path
@@ -55,11 +56,13 @@ class TintoraDataset(Dataset):
             print(f"Ошибка загрузки {self.images[idx]}: {e}")
             return None
 
+
 def filter_none_collate(batch):
     batch = list(filter(lambda x: x is not None, batch))
     if not batch:
         return None
     return torch.utils.data.dataloader.default_collate(batch)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Обучение TintoraAI")
@@ -140,6 +143,7 @@ def main():
     os.makedirs(os.path.dirname(final_path), exist_ok=True)
     torch.save(model.state_dict(), final_path)
     print(f"Финальная модель сохранена: {final_path}")
+
 
 if __name__ == "__main__":
     main()
