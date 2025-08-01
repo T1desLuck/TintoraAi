@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
@@ -12,8 +13,10 @@ class DoubleConv(nn.Module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
+
     def forward(self, x):
         return self.conv(x)
+
 
 class AttentionBlock(nn.Module):
     def __init__(self, channels):
@@ -36,6 +39,7 @@ class AttentionBlock(nn.Module):
         out = torch.bmm(value, attention)
         out = out.view(batch, c, h, w)
         return x + self.gamma * out
+
 
 class UNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=3):
@@ -86,6 +90,7 @@ class UNet(nn.Module):
         out = self.out(d1)
         return torch.sigmoid(out)
 
+
 class ObjectClassifier(nn.Module):
     def __init__(self, num_classes=100):
         super(ObjectClassifier, self).__init__()
@@ -110,6 +115,7 @@ class ObjectClassifier(nn.Module):
         x = self.dropout(self.relu(self.fc1(x)))
         x = self.fc2(x)
         return x
+
 
 class TintoraAI(nn.Module):
     def __init__(self, num_classes=100):
