@@ -2,11 +2,8 @@ from PIL import Image
 import torch
 import numpy as np
 
-
-def preprocess_image(image, pad_divisor=8, min_size=256):
-    """Конвертирует изображение в ч/б и добавляет padding
-    для совместимости с U-Net.
-    """
+def preprocess_image(image, pad_divisor=16, min_size=256):
+    """Конвертирует изображение в ч/б и добавляет padding для совместимости с U-Net."""
     try:
         image = image.convert("L")  # Чёрно-белое
     except Exception as e:
@@ -20,9 +17,8 @@ def preprocess_image(image, pad_divisor=8, min_size=256):
     pad_h = (pad_divisor - h % pad_divisor) % pad_divisor
     padded_image = Image.new('L', (w + pad_w, h + pad_h), 0)
     padded_image.paste(image, (0, 0))
+
     img_array = np.array(padded_image) / 255.0
-    img_tensor = (torch.from_numpy(img_array)
-                  .float()
-                  .unsqueeze(0))  # Добавляем только одно измерение для канала
+    img_tensor = torch.from_numpy(img_array).float().unsqueeze(0)
     print(f"Preprocessed tensor size: {img_tensor.shape}")
     return img_tensor, (w, h)
