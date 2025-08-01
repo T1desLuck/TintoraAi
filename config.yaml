@@ -1,4 +1,4 @@
-data_path: /path/to/your/data
+data_path: ./tintora_dataset
 save_path: models/colorizer_weights.pth
 epochs: 20
 batch_size: 1
