@@ -45,8 +45,8 @@ def apply_color_filter(image, style):
     return Image.fromarray(img_array)
 
 
-def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1.0, 
-                  style="neutral", temperature=0, contrast=0, brightness=0):
+def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1.0,
+                   style="neutral", temperature=0, contrast=0, brightness=0):
     """Обработка нескольких изображений в пакетном режиме"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -132,28 +132,28 @@ def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1
 
 def main():
     parser = argparse.ArgumentParser(
-        description=("TintoraAI: Нейронная сеть для колоризации черно-белых "
-                     "или выцветших фотографий")
+        description="TintoraAI: Нейронная сеть для колоризации черно-белых "
+                   "или выцветших фотографий"
     )
-    parser.add_argument("--input", type=str, required=True, 
-                       help="Путь к входному изображению или директории с изображениями")
-    parser.add_argument("--output", type=str, default="colored_image.jpg", 
-                       help="Путь для сохранения выходного изображения или директории")
+    parser.add_argument("--input", type=str, required=True,
+                        help="Путь к входному изображению или директории с изображениями")
+    parser.add_argument("--output", type=str, default="colored_image.jpg",
+                        help="Путь для сохранения выходного изображения или директории")
     parser.add_argument("--model", type=str, default="models/colorizer_weights.pth",
-                       help="Путь к весам модели")
+                        help="Путь к весам модели")
     parser.add_argument("--batch", type=int, default=1,
-                       help="Размер батча для обработки нескольких изображений")
-    parser.add_argument("--saturation", type=float, default=1.0, 
-                       help="Насыщенность цвета (0.5-2.0)")
-    parser.add_argument("--style", type=str, default="neutral", 
-                       choices=["modern", "vintage", "sepia", "dramatic", "neutral"],
-                       help="Стиль колоризации")
+                        help="Размер батча для обработки нескольких изображений")
+    parser.add_argument("--saturation", type=float, default=1.0,
+                        help="Насыщенность цвета (0.5-2.0)")
+    parser.add_argument("--style", type=str, default="neutral",
+                        choices=["modern", "vintage", "sepia", "dramatic", "neutral"],
+                        help="Стиль колоризации")
     parser.add_argument("--temperature", type=int, default=0,
-                       help="Температура цвета (-100 до 100, холодный-теплый)")
+                        help="Температура цвета (-100 до 100, холодный-теплый)")
     parser.add_argument("--contrast", type=int, default=0,
-                       help="Контрастность (-100 до 100)")
+                        help="Контрастность (-100 до 100)")
     parser.add_argument("--brightness", type=int, default=0,
-                       help="Яркость (-100 до 100)")
+                        help="Яркость (-100 до 100)")
 
     args = parser.parse_args()
 
@@ -164,7 +164,7 @@ def main():
             
         # Пакетная обработка директории
         batch_colorize(
-            args.input, args.output, args.model, args.batch, 
+            args.input, args.output, args.model, args.batch,
             args.saturation, args.style, args.temperature, args.contrast, args.brightness
         )
     else:
