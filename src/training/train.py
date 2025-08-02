@@ -7,10 +7,9 @@ import os
 import numpy as np
 import argparse
 from tqdm import tqdm
-from pytorch_msssim import ssim, ms_ssim
+from pytorch_msssim import ssim
 import yaml
 import time
-from torch.utils.checkpoint import checkpoint
 from torch.cuda.amp import autocast, GradScaler
 
 from src.model.tintora_ai import TintoraAI
