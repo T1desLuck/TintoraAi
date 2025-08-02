@@ -1,9 +1,33 @@
+# Конфигурация для обучения TintoraAI
+
+# Путь к данным
 data_path: ./tintora_dataset
+
+# Путь для сохранения моделей
 save_path: models/colorizer_weights.pth
-epochs: 20
-batch_size: 1
-accum_steps: 32
-lr: 0.001
+
+# Параметры обучения
+epochs: 50
+batch_size: 8
+accum_steps: 4
+lr: 0.0002
 num_classes: 100
+patience: 10
+save_frequency: 5
+
+# Параметры изображений
+min_image_size: 64
+max_image_size: 1024
 pad_divisor: 16
+
+# Оптимизации
 num_workers: 4
+use_amp: true
+augment: true
+
+# Параметры GAN
+lambda_perceptual: 10.0
+lambda_gan: 0.5
+
+# Дополнительно
+save_samples: true
