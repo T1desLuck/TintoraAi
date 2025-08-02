@@ -48,7 +48,7 @@ def apply_color_enhancement(image, temperature=0, contrast=0, brightness=0):
         temperature: Температура цвета (-100 до 100, холодный-теплый)
         contrast: Контрастность (-100 до 100)
         brightness: Яркость (-100 до 100)
- 
+
     Returns:
         PIL.Image: Обработанное изображение
     """
