@@ -167,10 +167,10 @@ def train(config_path="config.yaml"):
                 # Рассчитываем потери
                 loss_color = criterion_color(fake_output, color_images)
                 loss_perceptual = criterion_perceptual(fake_output, color_images)
-                
+
                 # Преобразуем метки из формы [batch_size, 1] в [batch_size]
                 loss_class = criterion_class(semantic_output, labels.squeeze())
-                
+
                 loss_gan_G = criterion_gan(d_fake_gen, True)
 
                 # Комбинируем потери для генератора
@@ -276,10 +276,10 @@ def train(config_path="config.yaml"):
                         color_output, size=color_images.shape[-2:], mode='bilinear', align_corners=True)
 
                 loss_color = criterion_color(color_output, color_images)
-                
+
                 # Преобразуем метки из формы [batch_size, 1] в [batch_size]
                 loss_class = criterion_class(semantic_output, labels.squeeze())
-                
+
                 # Преобразуем к типу float32 для совместимости с pytorch_msssim
                 color_output_float = color_output.float()
                 color_images_float = color_images.float()
