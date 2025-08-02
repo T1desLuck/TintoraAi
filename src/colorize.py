@@ -64,7 +64,7 @@ def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1
     os.makedirs(output_dir, exist_ok=True)
 
     # Находим все изображения в директории
-    image_files = [f for f in os.listdir(input_dir) 
+    image_files = [f for f in os.listdir(input_dir)
                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
 
     if not image_files:
@@ -133,7 +133,7 @@ def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1
 def main():
     parser = argparse.ArgumentParser(
         description="TintoraAI: Нейронная сеть для колоризации черно-белых "
-                   "или выцветших фотографий"
+                                "или выцветших фотографий"
     )
     parser.add_argument("--input", type=str, required=True,
                         help="Путь к входному изображению или директории с изображениями")
