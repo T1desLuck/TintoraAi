@@ -133,7 +133,7 @@ def batch_colorize(input_dir, output_dir, model_path, batch_size=4, saturation=1
 def main():
     parser = argparse.ArgumentParser(
         description="TintoraAI: Нейронная сеть для колоризации черно-белых "
-                                "или выцветших фотографий"
+            "или выцветших фотографий"
     )
     parser.add_argument("--input", type=str, required=True,
                         help="Путь к входному изображению или директории с изображениями")
