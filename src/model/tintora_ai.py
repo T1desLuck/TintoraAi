@@ -226,7 +226,7 @@ class Discriminator(nn.Module):
         # Если размеры разные, приводим к одному размеру
         if img_bw.shape[-2:] != img_color.shape[-2:]:
             img_bw = F.interpolate(img_bw, size=img_color.shape[-2:], mode='bilinear', align_corners=True)
-            
+
         img_input = torch.cat([img_bw, img_color], 1)
         return self.model(img_input)
 
