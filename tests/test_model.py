@@ -1,9 +1,6 @@
 import torch
-import torch.nn as nn
-import pytest
 from src.model.tintora_ai import (
-    ObjectClassifier, DoubleConv, AttentionBlock, 
-    UNet, Generator, Discriminator, TintoraAI
+    DoubleConv, AttentionBlock, UNet, Generator, Discriminator, TintoraAI
 )
 
 
@@ -23,8 +20,8 @@ def test_model_forward():
             # Проверяем размеры выходных тензоров
             assert color_output.shape[0] == 1, f"Batch size should be 1 for size {size}x{size}"
             assert color_output.shape[1] == 3, f"Color output should have 3 channels for size {size}x{size}"
-            assert color_output.shape[2:] == input_tensor.shape[2:], f"Color output shape mismatch for size {size}x{size}"
-            assert semantic_output.shape == (1, 100), f"Semantic output shape mismatch for size {size}x{size}"
+            assert color_output.shape[2:] == input_tensor.shape[2:], "Color output shape mismatch"
+            assert semantic_output.shape == (1, 100), "Semantic output shape mismatch"
             
             print(f"✓ Color output shape: {color_output.shape}")
             print(f"✓ Semantic output shape: {semantic_output.shape}")
@@ -50,10 +47,10 @@ def test_rectangle_images():
             color_output, semantic_output = model(input_tensor)
             
             # Проверяем размеры выходных тензоров
-            assert color_output.shape[0] == 1, f"Batch size should be 1"
-            assert color_output.shape[1] == 3, f"Color output should have 3 channels"
-            assert color_output.shape[2:] == input_tensor.shape[2:], f"Color output shape mismatch"
-            assert semantic_output.shape == (1, 100), f"Semantic output shape mismatch"
+            assert color_output.shape[0] == 1, "Batch size should be 1"
+            assert color_output.shape[1] == 3, "Color output should have 3 channels"
+            assert color_output.shape[2:] == input_tensor.shape[2:], "Color output shape mismatch"
+            assert semantic_output.shape == (1, 100), "Semantic output shape mismatch"
             
             print(f"✓ Color output shape: {color_output.shape}")
             print(f"✓ Semantic output shape: {semantic_output.shape}")
