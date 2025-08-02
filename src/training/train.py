@@ -110,7 +110,7 @@ def train(config_path="config.yaml"):
     for epoch in range(epochs):
         model.train()
         start_time = time.time()
-        
+
         # Обучение на тренировочном наборе
         running_loss_color = 0.0
         running_loss_class = 0.0
